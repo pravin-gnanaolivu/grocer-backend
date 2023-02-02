@@ -8,7 +8,7 @@ exports.productId = (req, res, next, id) => {
   Product.findById(id).exec((err, product) => {
     if (err) {
       return res.status(400).json({
-        error: "Product not found"
+        error: "Product not found",
       })
     }
     req.product = product
@@ -27,23 +27,57 @@ exports.create = (req, res) => {
   form.parse(req, (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        error: "Image cannot be uploaded"
+        error: "Image cannot be uploaded",
       })
     }
 
-    const { title, description, price, category, quantity, countryOfOrigin, nutrientValues, shipping, unit } = fields
+    const {
+      title,
+      description,
+      price,
+      category,
+      quantity,
+      countryOfOrigin,
+      nutrientValues,
+      shipping,
+      unit,
+    } = fields
 
-    if (!title || !description || !price || !category || !quantity || !countryOfOrigin || !nutrientValues || !shipping || !unit) {
+    console.log({
+      title,
+      description,
+      price,
+      category,
+      quantity,
+      countryOfOrigin,
+      nutrientValues,
+      shipping,
+      unit,
+    })
+
+    if (
+      !title ||
+      !description ||
+      !price ||
+      !category ||
+      !quantity ||
+      !countryOfOrigin ||
+      !nutrientValues ||
+      shipping == undefined ||
+      !unit
+    ) {
       return res.status(400).json({
-        error: "All fields are required"
+        error: "All fields are required",
       })
     }
 
     let product = new Product(fields)
+
+    console.log({ files })
     if (files.image) {
       if (files.image.size > 1000000) {
         return res.status(400).json({
-          error: "Image should be less than 1Mb"
+          error: "Image should be less than 1Mb",
         })
       }
 
@@ -54,7 +88,7 @@ exports.create = (req, res) => {
     product.save((err, data) => {
       if (err) {
         return res.status(400).json({
-          error: errorHandler(err)
+          error: errorHandler(err),
         })
       }
       res.json(data)
@@ -67,11 +101,11 @@ exports.remove = (req, res) => {
   product.remove((err, data) => {
     if (err) {
       return res.status(400).json({
-        error: errorHandler(err)
+        error: errorHandler(err),
       })
     }
     res.json({
-      message: `product with ID ${data._id} is successfully deleted`
+      message: `product with ID ${data._id} is successfully deleted`,
     })
   })
 }
@@ -82,15 +116,35 @@ exports.update = (req, res) => {
   form.parse(req, (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        error: "Image cannot be uploaded"
+        error: "Image cannot be uploaded",
       })
     }
 
-    const { title, description, price, category, quantity, countryOfOrigin, nutrientValues, shipping, unit } = fields
+    const {
+      title,
+      description,
+      price,
+      category,
+      quantity,
+      countryOfOrigin,
+      nutrientValues,
+      shipping,
+      unit,
+    } = fields
 
-    if (!title || !description || !price || !category || !quantity || !countryOfOrigin || !nutrientValues || !shipping || !unit) {
+    if (
+      !title ||
+      !description ||
+      !price ||
+      !category ||
+      !quantity ||
+      !countryOfOrigin ||
+      !nutrientValues ||
+      !shipping ||
+      !unit
+    ) {
       return res.status(400).json({
-        error: "All fields are required"
+        error: "All fields are required",
       })
     }
 
@@ -99,7 +153,7 @@ exports.update = (req, res) => {
     if (files.image) {
       if (files.image.size > 1000000) {
         return res.status(400).json({
-          error: "Image should be less than 1Mb"
+          error: "Image should be less than 1Mb",
         })
       }
 
@@ -110,7 +164,7 @@ exports.update = (req, res) => {
     product.save((err, data) => {
       if (err) {
         return res.status(400).json({
-          error: errorHandler(err)
+          error: errorHandler(err),
         })
       }
       res.json(data)
@@ -139,7 +193,7 @@ exports.list = (req, res) => {
       if (err) {
         console.log(err)
         return res.status(400).json({
-          error: "Products not found"
+          error: "Products not found",
         })
       }
       res.json(products)
@@ -147,10 +201,23 @@ exports.list = (req, res) => {
 }
 
 exports.forSearch = (req, res) => {
-  Product.find({}, { sold: false, image: false, category: false, quantity: false, countryOfOrigin: false, nutrientValues: false, shipping: false, createdAt: false, updatedAt: false }).exec((err, data) => {
+  Product.find(
+    {},
+    {
+      sold: false,
+      image: false,
+      category: false,
+      quantity: false,
+      countryOfOrigin: false,
+      nutrientValues: false,
+      shipping: false,
+      createdAt: false,
+      updatedAt: false,
+    }
+  ).exec((err, data) => {
     if (err) {
       return res.status(400).json({
-        error: errorHandler(err)
+        error: errorHandler(err),
       })
     }
     res.json(data)
@@ -166,7 +233,7 @@ exports.relatedList = (req, res) => {
     .exec((err, products) => {
       if (err) {
         return res.status(400).json({
-          error: "product not found"
+          error: "product not found",
         })
       }
 
@@ -178,7 +245,7 @@ exports.listCategories = (req, res) => {
   Product.distinct("category", {}, (err, categories) => {
     if (err) {
       res.status(400).json({
-        error: "Categories not found"
+        error: "Categories not found",
       })
     }
 
@@ -187,6 +254,7 @@ exports.listCategories = (req, res) => {
 }
 
 exports.listBySearch = (req, res) => {
+  console.log("RE: ", req.body)
   let order = req.body.order ? req.body.order : "asc"
   let sortBy = req.body.sortBy ? req.body.sortBy : "_id"
   let limit = req.body.limit ? parseInt(req.body.limit) : 100
@@ -203,7 +271,7 @@ exports.listBySearch = (req, res) => {
         // lte - less than
         findArgs[key] = {
           $gte: req.body.filters[key][0],
-          $lte: req.body.filters[key][1]
+          $lte: req.body.filters[key][1],
         }
       } else {
         findArgs[key] = req.body.filters[key]
@@ -220,13 +288,10 @@ exports.listBySearch = (req, res) => {
     .exec((err, data) => {
       if (err) {
         return res.status(400).json({
-          error: "Products not found"
+          error: "Products not found",
         })
       }
-      res.json({
-        size: data.length,
-        data
-      })
+      res.json(data)
     })
 }
 
@@ -239,19 +304,19 @@ exports.image = (req, res, next) => {
 }
 
 exports.decreaseQuantity = (req, res, next) => {
-  let bulkOps = req.body.order.products.map(item => {
+  let bulkOps = req.body.order.products.map((item) => {
     return {
       updateOne: {
         filter: { _id: item._id },
-        update: { $inc: { quantity: -item.count, sold: +item.count } }
-      }
+        update: { $inc: { quantity: -item.count, sold: +item.count } },
+      },
     }
   })
 
   Product.bulkWrite(bulkOps, {}, (error, products) => {
     if (error) {
       return res.status(400).json({
-        error: "Could not update product"
+        error: "Could not update product",
       })
     }
     next()
